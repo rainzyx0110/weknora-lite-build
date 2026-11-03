@@ -136,6 +136,16 @@ jobs:
           fi
           choco install mingw -y --no-progress
           echo "C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin" >> "$GITHUB_PATH"
+      - name: Provide sqlite3.h for sqlite-vec CGO
+        shell: bash
+        run: |
+          modcache="$(cygpath -u "$(go env GOMODCACHE)")"
+          go mod download github.com/mattn/go-sqlite3
+          hdr="$modcache/github.com/mattn/go-sqlite3@v1.14.24/sqlite3-binding.h"
+          test -f "$hdr"
+          mkdir -p .cgo-headers
+          cp "$hdr" .cgo-headers/sqlite3.h
+          echo "CGO_CFLAGS=-I$(cygpath -m "$PWD/.cgo-headers") -Wno-deprecated-declarations" >> "$GITHUB_ENV"
       - name: Compile Lite
         shell: bash
         run: |
