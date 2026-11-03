@@ -171,6 +171,9 @@ jobs:
           modcache="$(cygpath -u "$(go env GOMODCACHE)")"
           cp -R "$modcache/github.com/yanyiwu/gojieba@v1.4.7/deps/cppjieba/dict" "$pkg/dict"
           printf '@echo off\r\ncd /d "%%~dp0"\r\nset "JIEBA_DICT_DIR=%%~dp0dict"\r\n"WeKnora-lite.exe"\r\n' > "$pkg/start.cmd"
+          # Windows checkout may rewrite these to CRLF; the license manifest
+          # parser compares raw 64-hex checksums and module versions.
+          sed -i 's/\r$//' licenses/sources/modules.tsv go.mod go.sum
           bash scripts/copy-licenses.sh "$pkg"
           printf 'Upstream: Tencent/WeKnora\nVersion: v0.9.0\nCommit: f17ee8a8da901bd658a4cb25f40b5fd41adbfdd7\nPlatform: windows/amd64\n' > "$pkg/BUILD.txt"
           powershell -NoProfile -Command "Compress-Archive -Path '$pkg' -DestinationPath '$pkg.zip' -Force"
